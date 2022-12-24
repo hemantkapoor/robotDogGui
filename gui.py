@@ -25,7 +25,7 @@ class Mygui(ObserverBase):
         self.root.title("RaspClaws Control")
 
         self.label1 = tk.Label(self.root, text="RaspClaws Control GUI", font=('Arial', 18), anchor=tk.NW)
-        self.label1.pack```(anchor = 'n')
+        self.label1.pack(anchor = 'n')
 
         self.ipFrame = tk.Frame(self.root, highlightbackground="blue", highlightthickness=2, width=500)
         self.ipFrame.columnconfigure(0, weight=1)
