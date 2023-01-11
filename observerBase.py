@@ -8,4 +8,5 @@ class ObserverBase:
 
     @abstractmethod
     def handleFunction(self, data):
-        pass
+        print('Method Not implemented')
+        raise NotImplementedError

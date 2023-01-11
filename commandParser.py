@@ -12,7 +12,9 @@ class CommandParser:
 
     @staticmethod
     def handleCommand(data):
+
         data = bytearray(data)
+        print('data received')
         #first decode the preamble
         try:
             preamble = CommandHeader.from_buffer(data)
@@ -20,8 +22,8 @@ class CommandParser:
             for observer in CommandParser.registeredList:
                 try:
                     print(observer)
-                    print('Targeted = ' + str(preamble.target))
-                    print('Observer = ' + str(observer.getSource()))
+                    # print('Targeted = ' + str(preamble.target))
+                    # print('Observer = ' + str(observer.getSource()))
                     if observer.getSource() == preamble.target:
                         observer.handleFunction(data)
                         break

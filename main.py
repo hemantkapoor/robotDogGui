@@ -4,7 +4,7 @@ from commandParser import  *
 
 if __name__ == '__main__':
     clientObj = client.CleintClass()
-    guiObj = gui.Mygui(clientObj)
+    guiObj = gui.NewGui(clientObj)
     clientObj.addGui(guiObj)
 
     #Register all the commands here

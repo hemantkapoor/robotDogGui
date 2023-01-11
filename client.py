@@ -54,13 +54,17 @@ class CleintClass:
     def socket_disconnect(self):
         self.runThread = False
         self.m_tcpClicSock.close()
+        return True
 
 
-    def socket_connect(self):  # Call this function to connect with the server
+    def socket_connect(self, servIp = None):  # Call this function to connect with the server
 
 
         serverIp = SERVER_IP
         serverPort = SERVER_PORT
+
+        if servIp is not None:
+            self.m_ipAddress = servIp
 
         if self.m_ipAddress is not None:
             serverIp = self.m_ipAddress
@@ -69,21 +73,27 @@ class CleintClass:
             serverPort = self.m_serverPort
 
         ADDR = (serverIp, serverPort)
-        self.m_tcpClicSock = socket(AF_INET, SOCK_STREAM)  # Set connection value for socket
 
-        print("Connecting to server @ %s:%d..." % (SERVER_IP, SERVER_PORT))
-        print("Connecting")
-        self.m_tcpClicSock.connect(ADDR)  # Connection with the server
-        print("Connected")
+        try:
+            self.m_tcpClicSock = socket(AF_INET, SOCK_STREAM)  # Set connection value for socket
 
-        self.runThread = True
-        connection_threading = thread.Thread(target=self.connection_thread)
-        connection_threading.daemon = True
-        connection_threading.start()  # Thread starts
+            print("Connecting to server @ %s:%d..." % (SERVER_IP, SERVER_PORT))
+            print("Connecting")
+            self.m_tcpClicSock.connect(ADDR)  # Connection with the server
+            print("Connected")
 
-        # sending_threading = thread.Thread(target=self.sendPeriodicMessage)
-        # sending_threading.daemon = True
-        # sending_threading.start()  # Thread starts
+            self.runThread = True
+            connection_threading = thread.Thread(target=self.connection_thread)
+            connection_threading.daemon = True
+            connection_threading.start()  # Thread starts
+
+            return True
+
+            # sending_threading = thread.Thread(target=self.sendPeriodicMessage)
+            # sending_threading.daemon = True
+            # sending_threading.start()  # Thread starts
+        except:
+            return False
 
 if __name__ == '__main__':
     clentS = CleintClass()
