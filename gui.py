@@ -61,13 +61,6 @@ class NewGui(ObserverBase):
         self.topFrame.grid(row=1, column=0, sticky=tk.EW, pady=40, padx=20)
 
 
-
-        # Control members
-        self.m_serverHandler = None
-
-
-
-
     # ***************** Method to add IP Address ***************************
     def _addIp(self, frame, mainRow, mainColumn):
         localFrame = tk.CTkFrame(frame)
@@ -88,20 +81,37 @@ class NewGui(ObserverBase):
         label1 = tk.CTkLabel(localFrame, text="MOVEMENT CONTROL", font=GUI_FONT, anchor=tk.NW)
         label1.grid(row=0, column=0, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
+        label1 = tk.CTkLabel(localFrame, text="Speed", font=GUI_FONT, anchor=tk.NW)
+        label1.grid(row=0, column=2, sticky=tk.E, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="FORWARD", width=BUTTON_SIZE, command=self.forward_callback)
+        self._movSpeedControlslide = tk.CTkSlider(localFrame, width=160, height=16, border_width=5.5, command=self.moveSpeedControl)
+        self._movSpeedControlslide.grid(row=0, column=3, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
+
+
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="FORWARD", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self.controlMovement(FORWARD, MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.controlMovement(FORWARD, MOVEMENT_STOP))
         ipSubmitBtn.grid(row=1, column=2, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="LEFT", width=BUTTON_SIZE, command=self.left_callback)
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="LEFT", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self.controlMovement(LEFT, MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.controlMovement(LEFT, MOVEMENT_STOP))
+
         ipSubmitBtn.grid(row=2, column=1, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="STOP", width=BUTTON_SIZE, command=self.stop_callback)
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="RELAX", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self.controlMovement(RELAX, MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.controlMovement(RELAX, MOVEMENT_STOP))
         ipSubmitBtn.grid(row=2, column=2, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="RIGHT", width=BUTTON_SIZE, command=self.right_callback)
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="RIGHT", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self.controlMovement(RIGHT, MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.controlMovement(RIGHT, MOVEMENT_STOP))
         ipSubmitBtn.grid(row=2, column=3, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="REVERSE", width=BUTTON_SIZE, command=self.reverse_callback)
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="REVERSE", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self.controlMovement(BACKWARD, MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.controlMovement(BACKWARD, MOVEMENT_STOP))
         ipSubmitBtn.grid(row=3, column=2, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
         localFrame.grid(row=mainRow, column=mainColumn, sticky=tk.EW, rowspan=4, columnspan=5, pady=COLUMN_PADDDING, padx=ROW_PADDDING)
@@ -113,20 +123,24 @@ class NewGui(ObserverBase):
         label1.grid(row=0, column=0, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="UP", width=BUTTON_SIZE, command=self.cam_up_callback)
-        ipSubmitBtn.grid(row=1, column=2, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="UP", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self.cameraControlMovement(FORWARD, MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.cameraControlMovement(FORWARD, MOVEMENT_STOP))
+        ipSubmitBtn.grid(row=1, column=0, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="LEFT", width=BUTTON_SIZE, command=self.cam_left_callback)
-        ipSubmitBtn.grid(row=2, column=1, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
+        # ipSubmitBtn = tk.CTkButton(master=localFrame, text="LEFT", width=BUTTON_SIZE, command=self.cam_left_callback)
+        # ipSubmitBtn.grid(row=2, column=1, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
         # ipSubmitBtn = tk.CTkButton(master=localFrame, text="STOP", width=BUTTON_SIZE, command=self.cam_stop_callback)
         # ipSubmitBtn.grid(row=2, column=2, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="RIGHT", width=BUTTON_SIZE, command=self.cam_right_callback)
-        ipSubmitBtn.grid(row=2, column=3, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
+        # ipSubmitBtn = tk.CTkButton(master=localFrame, text="RIGHT", width=BUTTON_SIZE, command=self.cam_right_callback)
+        # ipSubmitBtn.grid(row=2, column=3, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        ipSubmitBtn = tk.CTkButton(master=localFrame, text="DOWN", width=BUTTON_SIZE, command=self.cam_down_callback)
-        ipSubmitBtn.grid(row=3, column=2, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="DOWN", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self.cameraControlMovement(BACKWARD, MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.cameraControlMovement(BACKWARD, MOVEMENT_STOP))
+        ipSubmitBtn.grid(row=3, column=0, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
         localFrame.grid(row=mainRow, column=mainColumn, sticky=tk.EW, rowspan=4, columnspan=5, pady=COLUMN_PADDDING, padx=ROW_PADDDING)
 
@@ -217,44 +231,27 @@ class NewGui(ObserverBase):
                 print('Error disconnecting')
                 return
             self._helper_changeStatus(False)
-
-
-
         print("connect_callback")
 
-    def forward_callback(self):
-        cmd = ControlMovementCMD()
-        cmd.movement = FORWARD
-        dataToSend = bytearray(cmd)
-        self._serverHandler.sendCommand(dataToSend)
-        print("forward_callback")
+    def moveSpeedControl(self, value):
+        pass
 
-    def left_callback(self):
-        print("left_callback")
+    def controlMovement(self, direction, startStop):
+        print(direction)
+        print(startStop)
+        print(self._movSpeedControlslide.get())
+        if self._serverHandler is not None:
+            mov = ControlMovementCMD()
+            mov.bodyPart = BODY_PART_LEGS
+            mov.direction = direction
+            mov.action = startStop
+            mov.speed = self._movSpeedControlslide.get()
+            dataToSend = bytearray(mov)
+            self._serverHandler.sendCommand(dataToSend)
 
-    def stop_callback(self):
-        print("stop_callback")
-
-    def right_callback(self):
-        print("right_callback")
-
-    def reverse_callback(self):
-        print("reverse_callback")
-
-    def cam_up_callback(self):
-        print("forward_callback")
-
-    def cam_left_callback(self):
-        print("left_callback")
-
-    def cam_stop_callback(self):
-        print("stop_callback")
-
-    def cam_right_callback(self):
-        print("right_callback")
-
-    def cam_down_callback(self):
-        print("reverse_callback")
+    def cameraControlMovement(self, direction, startStop):
+        print(direction)
+        print(startStop)
 
 
     def liveView_callback(self):

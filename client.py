@@ -35,15 +35,6 @@ class CleintClass:
             else:
                 break
 
-    def sendPeriodicMessage(self):
-        while 1:
-            try:
-                time.sleep(1)
-                self.m_tcpClicSock.send(('Hello from client').encode())
-            except:
-                print('Cannot Send')
-                pass
-
     def sendCommand(self, data):
         self.m_tcpClicSock.send(data)
 
@@ -88,10 +79,6 @@ class CleintClass:
             connection_threading.start()  # Thread starts
 
             return True
-
-            # sending_threading = thread.Thread(target=self.sendPeriodicMessage)
-            # sending_threading.daemon = True
-            # sending_threading.start()  # Thread starts
         except:
             return False
 
