@@ -14,14 +14,14 @@ class CommandParser:
     def handleCommand(data):
 
         data = bytearray(data)
-        print('data received')
+        #print('data received')
         #first decode the preamble
         try:
             preamble = CommandHeader.from_buffer(data)
             #check if the source is present in the lsit
             for observer in CommandParser.registeredList:
                 try:
-                    print(observer)
+                    # print(observer)
                     # print('Targeted = ' + str(preamble.target))
                     # print('Observer = ' + str(observer.getSource()))
                     if observer.getSource() == preamble.target:

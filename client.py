@@ -24,10 +24,10 @@ class CleintClass:
                         print("Nothing received")
                         continue
                     else:
-                        print('Received from server')
-                        print(data)
+                        #print('Received from server')
+                        #print(data)
                         if self.m_guiHandler is not None:
-                            print('Sending data to gui')
+                            #print('Sending data to gui')
                             CommandParser.handleCommand(data)
 
                 except:

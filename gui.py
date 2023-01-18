@@ -26,6 +26,27 @@ class NewGui(ObserverBase):
         self._connection = False
         self.LiveView = False
         self.zmqClientObj = None
+        self._sendServerCmd = False
+        self._FinalsendServerCmd = False
+        self._serverData = None
+
+        self._actionDict = {"push_ups": ACTION_PUSH_UPS,
+                            "hello One": ACTION_HELLO_ONE,
+                            "hello Two": ACTION_HELLO_TWO,
+                            "hand": ACTION_HAND,
+                            "swim": ACTION_SWIM,
+                            "yoga": ACTION_YOGA}
+
+        self._actionSelected = "push_ups"
+
+        self._movementDict = {RELAX: "RELAX",
+                              FORWARD: "FORWARD",
+                              BACKWARD: "BACKWARD",
+                              LEFT: "LEFT",
+                              RIGHT: "RIGHT",
+                              IDLE: "IDLE",
+                              STOPPED: "STOPPED"
+                              }
 
         tk.set_appearance_mode("Dark")
         tk.set_default_color_theme('blue')
@@ -46,6 +67,9 @@ class NewGui(ObserverBase):
 
         # Add Carera Control
         self._addCameraControl(self.topFrame, 6, 0)
+
+        # Add Actions
+        self._addActions(self.topFrame, 6, 3)
 
         #Control mode
         self._addControlMode(self.topFrame, 11, 0)
@@ -142,8 +166,30 @@ class NewGui(ObserverBase):
         ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self.cameraControlMovement(BACKWARD, MOVEMENT_STOP))
         ipSubmitBtn.grid(row=3, column=0, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
 
-        localFrame.grid(row=mainRow, column=mainColumn, sticky=tk.EW, rowspan=4, columnspan=5, pady=COLUMN_PADDDING, padx=ROW_PADDDING)
+        localFrame.grid(row=mainRow, column=mainColumn, sticky=tk.EW, rowspan=4, columnspan=2, pady=COLUMN_PADDDING, padx=ROW_PADDDING)
 
+    # ***************** Method to add Actions Control ***************************
+    def _addActions(self, frame, mainRow, mainColumn):
+        localFrame = tk.CTkFrame(frame)
+        label1 = tk.CTkLabel(localFrame, text="Actions", font=GUI_FONT, anchor=tk.NW)
+        label1.grid(row=0, column=0, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
+
+
+        combobox = tk.CTkComboBox(master=localFrame,
+                                             values=["push_ups", "hello One", "hello Two", "hand", "swim", "yoga"],
+                                             command=self.actionSelector_callbacks)
+        combobox.set("push_ups")  # set initial value
+
+        combobox.grid(row=1, column=0, sticky=tk.N, padx=STATUS_PADDDING)
+
+
+        ipSubmitBtn = tk.CTkButton(master=localFrame, text="Perform action", width=BUTTON_SIZE)
+        ipSubmitBtn.bind("<Button-1>", command=lambda events: self._commandPerformAction(MOVEMENT_START))
+        ipSubmitBtn.bind("<ButtonRelease>", command=lambda events: self._commandPerformAction(MOVEMENT_STOP))
+        ipSubmitBtn.grid(row=5, column=0, sticky=tk.W, padx=ROW_PADDDING, pady=COLUMN_PADDDING)
+
+        localFrame.grid(row=mainRow, column=mainColumn, sticky=tk.EW, rowspan=6, columnspan=3, pady=COLUMN_PADDDING,
+                        padx=ROW_PADDDING)
 
     # ***************** Method to add Control MODE  ***************************
     def _addControlMode(self, frame, mainRow, mainColumn):
@@ -236,18 +282,48 @@ class NewGui(ObserverBase):
     def moveSpeedControl(self, value):
         pass
 
+    #************************** CONTRROL DOGGY MOVEMENT **********************
     def controlMovement(self, direction, startStop):
         print(direction)
         print(startStop)
         print(self._movSpeedControlslide.get())
         if self._serverHandler is not None:
-            mov = ControlMovementCMD()
-            mov.bodyPart = BODY_PART_LEGS
-            mov.direction = direction
-            mov.action = startStop
-            mov.speed = self._movSpeedControlslide.get()
-            dataToSend = bytearray(mov)
-            self._serverHandler.sendCommand(dataToSend)
+            if startStop == MOVEMENT_STOP:
+                print("Sending stopped command")
+                self._sendServerCmd = False
+                mov = ControlMovementCMD()
+                mov.bodyPart = BODY_PART_LEGS
+                mov.direction = direction
+                mov.action = startStop
+                mov.speed = self._movSpeedControlslide.get() * 10
+                dataToSend = bytearray(mov)
+                self._serverData = dataToSend
+            else:
+                mov = ControlMovementCMD()
+                mov.bodyPart = BODY_PART_LEGS
+                mov.direction = direction
+                mov.action = startStop
+                mov.speed = self._movSpeedControlslide.get() * 10
+                dataToSend = bytearray(mov)
+                self._sendServerCmd = True
+                self._serverData = dataToSend
+                #self._serverHandler.sendCommand(dataToSend)
+
+    #************************* PERFORM DOGGY ACTIONS *************************
+    def _commandPerformAction(self, startStop):
+        if self._serverHandler is not None:
+            if startStop == MOVEMENT_STOP:
+                self._sendServerCmd = False
+            else:
+                action = ActionsCMD()
+                action.action = MOVEMENT_START
+                action.actionType = self._actionDict[self._actionSelected]
+                action.speed = self._movSpeedControlslide.get() * 10
+                print(action.actionType)
+                dataToSend = bytearray(action)
+                self._serverHandler.sendCommand(dataToSend)
+                #self._sendServerCmd = True
+                #self._serverData = dataToSend
 
     def cameraControlMovement(self, direction, startStop):
         print(direction)
@@ -269,6 +345,9 @@ class NewGui(ObserverBase):
     def modeSelector_callback(self, choice):
         print("combobox dropdown clicked:", choice)
 
+    def actionSelector_callbacks(self, choice):
+        self._actionSelected = choice
+
 
     def getSource(self):
         return GUI_ADDRESS
@@ -276,20 +355,21 @@ class NewGui(ObserverBase):
 
     # ************** COMMAND HANDLERS IMPLEMENTED HERE
     def handleFunction(self, data):
-        print('Got data from server')
+        #print('Got data from server')
         preamble = CommandHeader.from_buffer(data)
         #cHECK IF cpu INFORMATION RECEIVED
         if preamble.function == RESP_CPU_STATUS_FUNC:
             message = CpuInformation.from_buffer(data)
-            print('Gui Temp received ' + str(message.cpuTemp))
+            #print('Gui Temp received ' + str(message.cpuTemp))
             try:
                 self._cpuTempLabel.configure(text=('{:.2f}'.format(message.cpuTemp) + u'8\N{DEGREE SIGN}'))
                 self._cpuRamLabel.configure(text=(str(message.cpuRAM)))
+                self._moveStatusLabel.configure(text=(self._movementDict[message.movement]))
             except Exception as e:
                 print(e)
         elif preamble.function == RESP_MOVEMENT:
             message = CameraStatus.from_buffer(data)
-            print('Movement Status Received' + str(message.status))
+            #print('Movement Status Received' + str(message.status))
             try:
                 self._moveStatusLabel.configure(text=(str(message.status)))
             except Exception as e:
@@ -319,8 +399,10 @@ class NewGui(ObserverBase):
 
 
     def backgroundThread(self):
+        counter = 2
         while True:
-            time.sleep(1)
+            #counter = counter + 1
+            #time.sleep(0.5)
             if self._serverHandler is not None:
                 if self._connection is True:
                     preamble = CommandHeader()
@@ -328,7 +410,26 @@ class NewGui(ObserverBase):
                     preamble.function = REQ_CPU_STATUS_FUNC
                     dataToSend = bytearray(preamble)
                     self._serverHandler.sendCommand(dataToSend)
-                    print(dataToSend)
+                    time.sleep(0.5)
+
+                    #Check if movement requested every second
+                    #if counter >= 2:
+                        #counter = 0
+                    if self._sendServerCmd == True:
+                        self._FinalsendServerCmd = True
+                        self._serverHandler.sendCommand(self._serverData)
+                    else:
+                        if self._FinalsendServerCmd == True:
+                            print("Sending stop message")
+                            self._FinalsendServerCmd = False
+                            self._serverHandler.sendCommand(self._serverData)
+                else:
+                    time.sleep(0.5)
+            else:
+                time.sleep(0.5)
+
+
+                        #print(dataToSend)
 
     def startthread(self):
         bk_threading = threading.Thread(target=self.backgroundThread)
